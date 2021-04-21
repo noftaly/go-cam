@@ -21,19 +21,14 @@ func colorToCharacter(value int) string {
 	return CHARACTERS[min(value * AMOUNT_CHARACTERS/ 255, AMOUNT_CHARACTERS - 1)]
 }
 
-func toAsciiCharacter(img gocv.Mat) string {
-	width := img.Cols()
-	height := img.Rows()
-	cellWidth := width / COLS
-	cellHeight := height / ROWS
-	if COLS > width || ROWS > height {
-		fmt.Println(errors.New("invalid amount of row or columns"))
-		os.Exit(1)
-	}
+func toAsciiCharacter(img gocv.Mat, pixelWidth, pixelHeight int) string {
 	buffer := ""
 	for i := 0; i < ROWS; i++ {
 		for j := 0; j < COLS; j++ {
-			rec := image.Rectangle{ Min: image.Point{ X: j * cellWidth, Y: i * cellHeight }, Max: image.Point{ X: (j + 1) * cellWidth, Y: (i + 1) * cellHeight } }
+			rec := image.Rectangle{
+				Min: image.Point{ X: j * pixelWidth, Y: i * pixelHeight },
+				Max: image.Point{ X: (j + 1) * pixelWidth, Y: (i + 1) * pixelHeight },
+			}
 			region := img.Region(rec)
 			gray := region.Mean()
 			buffer += colorToCharacter(int(gray.Val1))
@@ -49,10 +44,24 @@ func main() {
 	img := gocv.NewMat()
 	defer img.Close()
 
+	// Read the camera once to pre-compute the pixel's width & height
+	webcam.Read(&img)
+
+	width := img.Cols()
+	height := img.Rows()
+	pixelWidth := width / COLS
+	pixelHeight := height / ROWS
+
+	if COLS > width || ROWS > height {
+		fmt.Println(errors.New("invalid amount of row or columns"))
+		os.Exit(1)
+	}
+
 	for {
 		webcam.Read(&img)
 		gocv.CvtColor(img, &img, gocv.ColorBGRToGray)
 		gocv.Flip(img, &img, 1)
-		fmt.Println(toAsciiCharacter(img))
+
+		fmt.Println(toAsciiCharacter(img, pixelWidth, pixelHeight))
 	}
 }
