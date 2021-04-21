@@ -21,10 +21,10 @@ func colorToCharacter(value int) string {
 	return CHARACTERS[min(value * AMOUNT_CHARACTERS/ 255, AMOUNT_CHARACTERS - 1)]
 }
 
-func toAsciiCharacter(img gocv.Mat, pixelWidth, pixelHeight int) string {
-	buffer := ""
+func toAsciiCharacter(img gocv.Mat, pixelWidth, pixelHeight int) (buffer string) {
 	for i := 0; i < ROWS; i++ {
 		for j := 0; j < COLS; j++ {
+			// Compute the mean color for the current pixel we are printing
 			rec := image.Rectangle{
 				Min: image.Point{ X: j * pixelWidth, Y: i * pixelHeight },
 				Max: image.Point{ X: (j + 1) * pixelWidth, Y: (i + 1) * pixelHeight },
